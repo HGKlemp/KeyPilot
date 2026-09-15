@@ -3,7 +3,6 @@ from extensions import db
 
 EMPLOYEE_ROLES = ("employee", "operator")
 KEY_STATUSES = ("available", "issued", "lost", "defective", "retired")
-LOAN_STATUSES = ("active", "returned")
 
 
 key_rooms = db.Table(
@@ -110,11 +109,6 @@ class KeyLoan(db.Model):
         db.ForeignKey("employees.id"),
     )
     returned_at = db.Column(db.DateTime(timezone=True))
-    status = db.Column(
-        db.Enum(*LOAN_STATUSES, name="loan_status"),
-        default="active",
-        nullable=False,
-    )
     notes = db.Column(db.Text)
 
     employee = db.relationship("Employee", foreign_keys=[employee_id])
@@ -130,9 +124,9 @@ class KeyLoan(db.Model):
 
     __table_args__ = (
         db.Index(
-            "uq_active_key_loan",
+            "uq_open_key_loan",
             "key_id",
             unique=True,
-            postgresql_where=db.text("status = 'active'"),
+            postgresql_where=db.text("returned_at IS NULL"),
         ),
     )
