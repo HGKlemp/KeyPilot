@@ -1,26 +1,48 @@
-import os
+from typing import Annotated
 
-from dotenv import load_dotenv
-from flask import Flask
-from sqlalchemy import URL
+from fastapi import Depends, FastAPI, HTTPException
+from sqlalchemy import select
+from sqlalchemy.orm import Session, selectinload
 
-from extensions import db
-import models
+from extensions import get_db
+from models import Key
+from schemas import KeyRead
 
 
-load_dotenv()
-
-app = Flask(__name__)
-
-app.config["SQLALCHEMY_DATABASE_URI"] = URL.create(
-    drivername="postgresql+psycopg",
-    username=os.getenv("DB_USER"),
-    password=os.getenv("DB_PASSWORD"),
-    host=os.getenv("DB_HOST"),
-    port=int(os.getenv("DB_PORT")),
-    database=os.getenv("DB_NAME"),
+app = FastAPI(
+    title="KeyPilot API",
+    version="0.1.0",
+    description="Backend zur Verwaltung von Schlüsseln, Räumen und Ausleihen.",
 )
 
-app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+DatabaseSession = Annotated[Session, Depends(get_db)]
 
-db.init_app(app)
+
+@app.get("/")
+def read_root():
+    return {"name": "KeyPilot API", "status": "ok"}
+
+
+@app.get("/keys", response_model=list[KeyRead])
+def list_keys(database: DatabaseSession):
+    statement = (
+        select(Key)
+        .options(selectinload(Key.rooms))
+        .order_by(Key.key_number)
+    )
+    return database.scalars(statement).all()
+
+
+@app.get("/keys/{key_id}", response_model=KeyRead)
+def get_key(key_id: int, database: DatabaseSession):
+    statement = (
+        select(Key)
+        .options(selectinload(Key.rooms))
+        .where(Key.id == key_id)
+    )
+    key = database.scalar(statement)
+
+    if key is None:
+        raise HTTPException(status_code=404, detail="Schlüssel nicht gefunden")
+
+    return key

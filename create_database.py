@@ -1,13 +1,10 @@
 import models
-from app import app
-from extensions import db
+from extensions import Base, engine
 
 
 def create_database():
-    with app.app_context():
-        db.create_all()
-
-    return db.metadata.sorted_tables
+    Base.metadata.create_all(bind=engine)
+    return Base.metadata.sorted_tables
 
 
 if __name__ == "__main__":

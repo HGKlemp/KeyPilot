@@ -1,14 +1,8 @@
-"""Trägt ausgeschriebene Testdaten in eine leere KeyPilot-Datenbank ein.
-Datei im KeyPilot-Hauptordner ablegen und mit python db_seed.py starten.
-"""
-from pathlib import Path
-from dotenv import load_dotenv
+"""Trägt ausgeschriebene Testdaten in eine leere KeyPilot-Datenbank ein."""
 
+from sqlalchemy import func, select
 
-load_dotenv(Path(__file__).resolve().parent / ".env")
-
-from app import app
-from extensions import db
+from extensions import SessionLocal
 from models import Employee, Key, KeyLoan, Room
 
 # Jede Zeile ist genau ein Mitarbeiter: Vorname, Nachname, E-Mail, Rolle, aktiv.
@@ -185,12 +179,16 @@ KEYS = [
 
 
 def seed_database():
-    with app.app_context():
+    with SessionLocal() as database:
         counts = {
-            "Mitarbeiter": db.session.query(Employee).count(),
-            "Räume": db.session.query(Room).count(),
-            "Schlüssel": db.session.query(Key).count(),
-            "Ausleihen": db.session.query(KeyLoan).count(),
+            "Mitarbeiter": database.scalar(
+                select(func.count()).select_from(Employee)
+            ),
+            "Räume": database.scalar(select(func.count()).select_from(Room)),
+            "Schlüssel": database.scalar(select(func.count()).select_from(Key)),
+            "Ausleihen": database.scalar(
+                select(func.count()).select_from(KeyLoan)
+            ),
         }
         if any(counts.values()):
             details = ", ".join(f"{name}: {count}" for name, count in counts.items() if count)
@@ -212,10 +210,10 @@ def seed_database():
             keys.append(key)
 
         try:
-            db.session.add_all(employees + rooms + keys)
-            db.session.commit()
+            database.add_all(employees + rooms + keys)
+            database.commit()
         except Exception:
-            db.session.rollback()
+            database.rollback()
             raise
 
         print(f"Eingetragen: {len(employees)} Mitarbeiter (3 Bediener), {len(rooms)} Räume, {len(keys)} Schlüssel.")
@@ -223,4 +221,4 @@ def seed_database():
 
 
 if __name__ == "__main__":
-    seed_database() 
+    seed_database()
