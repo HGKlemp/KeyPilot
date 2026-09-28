@@ -1,0 +1,31 @@
+KEYS
+GET /keys X
+GET /keys/{key_id} X
+POST /keys
+PATCH /keys/{key_id}
+
+EMPLOYEES
+GET /employees X
+GET /employees/{employee_id} X
+POST /employees X
+PATCH /employees/{employee_id} X
+
+ROOMS
+GET /rooms X
+GET /rooms/{room_id} X
+POST /rooms X
+PATCH /rooms/{room_id} X
+
+KEY-ROOM ASSIGNMENTS
+GET /keys/{key_id}/rooms
+POST /keys/{key_id}/rooms/{room_id}
+DELETE /keys/{key_id}/rooms/{room_id}
+
+LOANS
+GET /loans X
+GET /loans/{loan_id} X
+POST /loans X
+PATCH /loans/{loan_id}/return X
+
+AUTHENTICATION
+GET /me

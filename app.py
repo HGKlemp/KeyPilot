@@ -1,6 +1,9 @@
 from fastapi import FastAPI
 
+from routers.employees import router as employees_router
 from routers.keys import router as keys_router
+from routers.loans import router as loans_router
+from routers.rooms import router as rooms_router
 
 
 app = FastAPI(
@@ -15,3 +18,6 @@ def read_root():
 
 
 app.include_router(keys_router)
+app.include_router(employees_router)
+app.include_router(rooms_router)
+app.include_router(loans_router)
