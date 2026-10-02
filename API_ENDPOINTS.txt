@@ -1,8 +1,8 @@
 KEYS
 GET /keys X
 GET /keys/{key_id} X
-POST /keys
-PATCH /keys/{key_id}
+POST /keys X
+PATCH /keys/{key_id} X
 
 EMPLOYEES
 GET /employees X

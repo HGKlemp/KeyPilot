@@ -5,6 +5,7 @@ from pydantic import BaseModel, ConfigDict, Field
 
 
 EmployeeRole = Literal["employee", "operator"]
+KeyStatus = Literal["available", "issued", "lost", "defective", "retired"]
 
 
 class EmployeeCreate(BaseModel):
@@ -74,6 +75,20 @@ class KeyRead(BaseModel):
     storage_location: str | None
     status: str
     rooms: list[RoomRead]
+
+
+class KeyCreate(BaseModel):
+    key_number: str = Field(min_length=1, max_length=50)
+    description: str | None = Field(default=None, max_length=255)
+    storage_location: str | None = Field(default=None, max_length=100)
+    status: KeyStatus = "available"
+
+
+class KeyUpdate(BaseModel):
+    key_number: str | None = Field(default=None, min_length=1, max_length=50)
+    description: str | None = Field(default=None, max_length=255)
+    storage_location: str | None = Field(default=None, max_length=100)
+    status: KeyStatus | None = None
 
 
 class LoanCreate(BaseModel):
